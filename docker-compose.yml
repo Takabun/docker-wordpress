@@ -1,0 +1,39 @@
+version: '3.3'
+ 
+services:
+   wordpress:
+     image: wordpress:latest
+     depends_on:
+       - db
+     ports:
+       - "8000:80"
+     restart: always
+     environment:
+       WORDPRESS_DB_HOST: db:3306
+     env_file: .env
+     volumes:
+      #  - ./html:/var/www/html
+       - ./themes/bones:/var/www/html/wp-content/themes/myportfolio
+   db:
+     image: mysql:5.7
+    #  MySQLのデータはデータボリュームに保存し永続化しています。
+    # 正確にいうと「db-volume」をdbコンテナの「/var/lib/mysql」にマウントするという意味。実際のdbではなく、あくまでdbコンテナな
+     env_file: .env
+     volumes:
+       - db_data:/var/lib/mysql
+     restart: always
+
+   phpmyadmin:
+      depends_on:
+       - db
+      image: phpmyadmin/phpmyadmin
+      environment:
+       PMA_HOST: db
+      restart: always
+      ports:
+       - "8080:80"
+
+# databaseのように永続的なストレージが欲しい場合に必要な設定。(⇦つまり、dbではない？？)
+volumes:
+  #db_volumeという名前をつける事で、他のコンテナでも代用が効くようになる
+    db_data:
